@@ -1,0 +1,257 @@
+function contarPalabras(texto) {
+  let palabras = [];
+  let palabraActual = "";
+  for (let i = 0; i < texto.length; i++) {
+    let caracter = texto[i];
+    if (caracter !== " " && caracter !== "\n") {
+      palabraActual += caracter;
+    } else {
+      if (palabraActual.length > 0) {
+        palabras.push(palabraActual);
+        palabraActual = "";
+      }
+    }
+  }
+  if (palabraActual.length > 0) {
+    palabras.push(palabraActual);
+  }
+  alert("Número de palabras: " + palabras.length);
+}
+contarPalabras("Hola mundo desde Quito");
+
+function contarSignosPuntuacion(texto) {
+  let signos = ['.', ',', ';', ':', '!', '?', '¿', '¡', '"'];
+  let encontrados = [];
+  for (let i = 0; i < texto.length; i++) {
+    let caracter = texto[i];
+    for (let j = 0; j < signos.length; j++) {
+      if (caracter === signos[j]) {
+        encontrados.push(caracter);
+      }
+    }
+  }
+  alert("Signos de puntuación: " + encontrados.length);
+}
+contarSignosPuntuacion('Hola, ¿cómo estás?');
+
+function contarVocales(texto) {
+  let vocales = ['a', 'e', 'i', 'o', 'u', 'á', 'é', 'í', 'ó', 'ú', 'A', 'E', 'I', 'O', 'U', 'Á', 'É', 'Í', 'Ó', 'Ú'];
+  let encontradas = [];
+  for (let i = 0; i < texto.length; i++) {
+    let caracter = texto[i];
+    for (let j = 0; j < vocales.length; j++) {
+      if (caracter === vocales[j]) {
+        encontradas.push(caracter);
+      }
+    }
+  }
+  alert("Cantidad de vocales: " + encontradas.length);
+}
+contarVocales("Educación");
+
+function contarConsonantes(texto) {
+    texto = texto.toLowerCase();
+    const vocales = "aeiou";
+    let contador = 0;
+    for (let i = 0; i < texto.length; i++) {
+        let letra = texto[i];
+        if (letra >= "a" && letra <= "z") {
+            if(letra != "a" && letra != "e" && letra != "i" && letra != "o" && letra != "u"){
+                contador++;
+            }
+        }
+    }
+    return contador;
+}
+let palabra = "Hola";
+console.log("Cantidad de consonates:" , contarConsonantes(palabra));
+
+function contarDigitos(texto) {
+    let contador = 0;
+    for (let i = 0; i < texto.length; i++) {
+        let caracter = texto[i];
+        if (caracter >= "0" && caracter <= "9") {
+            contador++;
+        }
+    }
+    return contador;
+}
+let frase = "Mi clave es 1234";
+console.log("Cantidad de digitos:", contarDigitos(frase));
+
+function contarMayusculas(texto) {
+    let palabras = texto.split(" ");
+    let contador = 0;
+    for (let i = 0; i < palabras.length; i++) {
+        let palabra = palabras[i];
+        if (palabra.length > 0) {
+            let primera = palabra[0];
+            if (primera >= "A" && primera <= "Z") {
+                contador++;
+            }
+        }
+    }
+    return contador;
+}
+let texto = "Hola mundo Bonito";
+console.log("Palabras con mayuscula incial:", contarMayusculas(texto));
+
+function contarMinusculasInicio() {
+    let texto = "hola Mundo bonito";
+    let palabras = [];
+    let palabraActual = "";
+    for (let i = 0; i < texto.length; i++) {
+        if (texto[i] !== " ") {
+            palabraActual += texto[i];
+        } else {
+            palabras.push(palabraActual);
+            palabraActual = "";
+        }
+    }
+    if (palabraActual.length > 0) {
+        palabras.push(palabraActual);
+    }
+    let contador = 0;
+    for (let i = 0; i < palabras.length; i++) {
+        let primeraLetra = palabras[i][0];
+        if (primeraLetra >= "a" && primeraLetra <= "z") {
+            contador++;
+        }
+    }
+    console.log("Palabras con minúscula al incio: " + contador);
+}
+contarMinusculasInicio();
+
+function contarParrafos() {
+    let texto = "Hola mundo\nEsto es un segundo párrafo\n este es un tercer parrafo";
+    let parrafos = [];
+    let actual = "";
+    for (let i = 0; i < texto.length; i++) {
+        if (texto[i] !== "\n") {
+            actual += texto[i];
+        } else {
+            parrafos.push(actual); 
+            actual = "";
+        }
+    }
+    if (actual.length > 0) parrafos.push(actual);
+    console.log("Número de párrafos: " + parrafos.length);
+}
+contarParrafos(); 
+
+function invertirTexto() {
+    let texto = "hola a todos ";
+    let invertido = [];
+    for (let i = texto.length - 1; i >= 0; i--) {
+        invertido.push(texto[i]);
+    }
+    let resultado = "";
+    for (let i = 0; i < invertido.length; i++) {
+        resultado += invertido[i];
+    }
+    console.log(resultado);
+}
+
+invertirTexto(); 
+
+function contarCaracteres () {
+    let texto = prompt("Ingrese texto");
+    let c = 0;
+        for(let i = 0;i < texto.length;i++){
+            c++;
+        }
+    console.log("Total de caracteres: ", c);
+}
+contarCaracteres();
+
+function buscarPalabra () {
+    let frase = prompt("Ingrese frase");
+    let palabra = prompt("Ingrese la palabra a buscar");
+    let palabraAct = "";
+    let palabraEncont = false;
+        for(let i = 0; i < frase.length;i++){
+            if (frase[i] === "") {
+                palabraAct += texto[i];
+            } else {
+            if ( palabraAct === palabra) {
+                palabraEncont = true
+            }
+        palabraAct = "";
+        }
+    }
+            if (palabraAct === palabra) {
+                palabraEncont = true;
+            }
+            if (palabraEncont) {
+                console.log("La palabra "+palabra+" si se encuentra en el texto")
+            } else {
+                console.log("La palabra "+palabra+" no se encuentra en el texto")
+            }
+}
+buscarPalabra();
+
+function contarUnCaracter () {
+    let frase = prompt("Ingrese una frase");
+    let caracter = prompt("Ingrese un caracter a buscar");
+    let c = 0;
+    for(let i = 0;i < frase.length;i++) {
+        if (frase[i] === caracter) {
+            c++;
+        }
+    }
+    console.log("El caracter "+caracter+" aparece "+c+" veces");
+}
+contarUnCaracter();
+
+function contarCaracteresPosicionesPares() {
+    let texto = prompt("Ingrese un texto:");
+    let contador = 0;
+    for (let i = 0; i < texto.length; i++) {
+        if (i % 2 === 0) {
+            contador = contador + 1;
+        }
+    }
+    console.log(`Caracteres en posiciones pares: ${contador}`);
+}
+
+contarCaracteresPosicionesPares();  
+
+function contarCaracteresPosicionesImpares() {
+    let texto = prompt("Ingrese un texto:");
+    let contador = 0;
+    for (let i = 0; i < texto.length; i++) {
+        if (i % 2 === 1) {
+            contador = contador + 1;
+        }
+    }
+    console.log(`Caracteres en posiciones impares: ${contador}`);
+}
+
+contarCaracteresPosicionesImpares();
+
+function agregarTexto() {
+    let texto = prompt("Ingrese un texto:");
+    let fragmento = prompt("Ingrese un fragmento:");
+    
+    let textoInicio = "";
+    for (let i = 0; i < fragmento.length; i++) {
+        textoInicio += fragmento[i];
+    }
+    textoInicio += " ";
+    for (let i = 0; i < texto.length; i++) {
+        textoInicio += texto[i];
+    }
+    
+    let textoFinal = "";
+    for (let i = 0; i < texto.length; i++) {
+        textoFinal += texto[i];
+    }
+    textoFinal += " ";
+    for (let i = 0; i < fragmento.length; i++) {
+        textoFinal += fragmento[i];
+    }
+    
+    console.log(`Al inicio: "${textoInicio}"\nAl final: "${textoFinal}"`);
+}
+
+agregarTexto();
