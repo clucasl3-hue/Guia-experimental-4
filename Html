@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto - Guía Práctica Funcional</title>
+    
+    <style>
+        :root {
+            --color-primary: #1e88e5;
+            --color-secondary: #ff9800;
+            --color-text: #333333;
+            --color-bg-light: #f4f4f4;
+            --color-white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-bg-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--color-text);
+        }
+
+        .container {
+            background-color: var(--color-white);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 95%;
+            max-width: 1200px;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 15px;
+        }
+
+        .toolbar button {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .toolbar button:hover {
+            background-color: var(--color-secondary);
+            transform: translateY(-1px);
+        }
+        
+        .toolbar input[type="color"] {
+            width: 40px; 
+            height: 40px; 
+            padding: 0;
+            border: 3px solid var(--color-primary); 
+            border-radius: 6px;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+        
+        .toolbar input[type="color"]:hover {
+            border-color: var(--color-secondary); 
+        }
+
+        .main-content-wrapper {
+            display: flex;
+            gap: 25px;
+        }
+
+        .input-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 450px; 
+        }
+
+        #editor {
+            width: 100%;
+            min-height: 350px; 
+            max-height: 500px;
+            border: 2px solid #cccccc;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            line-height: 1.6;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            overflow-y: auto;
+            outline: none; 
+        }
+
+        #editor:empty:before {
+            content: attr(placeholder);
+            color: #999;
+            pointer-events: none;
+            display: block;
+        }
+        
+        #editor:focus {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+
+        .stats-container {
+            width: 350px; 
+            min-width: 350px; 
+            flex-shrink: 0; 
+            background-color: var(--color-bg-light);
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 14px;
+            max-height: 500px; 
+            overflow-y: auto; 
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-container h3 {
+            margin-top: 0;
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-secondary);
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .stats-container p {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #cccccc;
+        }
+
+        .stats-container span {
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+        
+        #interactiveBtn {
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        #interactiveBtn:hover {
+            background-color: #e68900;
+        }
+        
+        .search-area {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        #searchWord {
+            width: 100%; 
+            box-sizing: border-box; 
+            margin-bottom: 5px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        #r_search {
+            background: var(--color-white); 
+            padding: 10px; 
+            border-radius: 6px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-size: 13px;
+            color: var(--color-text);
+            border: 1px solid #ddd;
+            min-height: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content-wrapper {
+                flex-direction: column;
+            }
+            .stats-container {
+                width: 100%;
+                min-width: unset;
+                flex-shrink: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <button id="boldBtn" title="Negrita" onclick="execCmd('bold')"><b>N</b></button>
+            <button id="italicBtn" title="Cursiva" onclick="execCmd('italic')"><i>C</i></button>
+            <button id="underlineBtn" title="Subrayado" onclick="execCmd('underline')"><u>S</u></button>
+            <button id="increaseFontBtn" title="Aumentar fuente">A+</button>
+            <button id="decreaseFontBtn" title="Disminuir fuente">A-</button>
+            <button onclick="cutText()" title="Cortar">Cortar</button>
+            <button onclick="copyText()" title="Copiar">Copiar</button>
+            <button onclick="pasteText()" title="Pegar">Pegar</button>
+            <button onclick="undoText()" title="Deshacer">Deshacer</button>
+            <button onclick="redoText()" title="Rehacer">Rehacer</button>
+            <input type="color" title="Color del texto" onchange="execCmd('foreColor', this.value)">
+        </div>
+        
+        <div class="main-content-wrapper">
+            <div class="input-section">
+                <div 
+                    id="editor" 
+                    contenteditable="true" 
+                    placeholder="Ingrese texto..."
+                ></div>
+            </div>
+            
+            <div class="stats-container" id="statsContainer">
+                <h3>Resultados de Análisis (Lógica Pura)</h3>
+                <p>1. Palabras: <span id="wordCount">0</span></p>
+                <p>2. Signos de puntuación: <span id="punctuationCount">0</span></p>
+                <p>3. Vocales: <span id="vowelCount">0</span></p>
+                <p>4. Consonantes: <span id="consonantCount">0</span></p>
+                <p>5. Dígitos: <span id="digitCount">0</span></p>
+                <p>6. Palabras con Mayúscula Inicial: <span id="upperStartCount">0</span></p>
+                <p>7. Palabras con Minúscula Inicial: <span id="lowerStartCount">0</span></p>
+                <p>8. Párrafos: <span id="paragraphCount">0</span></p>
+                <p>10. Caracteres (Total): <span id="charCount">0</span></p>
+                <p>13. Caracteres Posiciones Pares: <span id="evenPosCount">0</span></p>
+                <p>14. Caracteres Posiciones Impares: <span id="oddPosCount">0</span></p>
+                
+                <div class="search-area">
+                    <h4>11. Buscar Palabra (Contador en Vivo)</h4>
+                    <input type="text" id="searchWord" placeholder="Escribe la palabra a buscar..." >
+                    <div id="r_search"></div>
+                </div>
+
+                <p style="font-size: 13px; font-weight: bold; margin-top: 15px; color: var(--color-secondary);">
+                    *Ejercicios 9, 12 y 15 requieren interacción.*
+                </p>
+                <p>9. Texto Invertido: <span id="invertedTextResult" style="color: #666; font-weight: normal; font-size: 13px;">(Clic en botón naranja)</span></p>
+                <p>15. Texto con Fragmento:</p>
+                <p style="font-size: 12px; margin-left: 10px;">Al Inicio: <span id="texto15Inicio" style="color: #666; font-weight: normal; font-size: 12px;">-</span></p>
+                <p style="font-size: 12px; margin-left: 10px;">Al Final: <span id="texto15Final" style="color: #666; font-weight: normal; font-size: 12px;">-</span></p>
+                <button id="interactiveBtn" onclick="executeInteractiveFunctions()">
+                    Ejecutar Ejercicios 9 (Completo), 12 y 15
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        const editor = document.getElementById('editor');
+        const searchWordInput = document.getElementById('searchWord');
+        
+        const VOCALES = "aeiouáéíóúAEIOUÁÉÍÓÚ";
+        const SIGNOS = ".,;:!?¿¡\""; 
+        const DIGITOS = "0123456789";
+        const CONSONANTES = "bcdfghjklmnpqrstvwxyzñBCDFGHJKLMNPQRSTVWXYZÑ"; 
+        const SEPARADORES = " \n\r\t";
+
+        
+        function execCmd(cmd, val = null) { 
+            document.execCommand(cmd, false, val); 
+            editor.focus(); 
+        }
+
+        
+        function cutText() { document.execCommand('cut'); editor.focus(); }
+        function copyText() { document.execCommand('copy'); editor.focus(); }
+        function pasteText() { 
+            editor.focus(); 
+        }
+        function undoText() { document.execCommand('undo'); editor.focus(); }
+        function redoText() { document.execCommand('redo'); editor.focus(); }
+
+        
+        let currentFontSize = 16;
+        editor.style.fontSize = `${currentFontSize}px`;
+
+        document.getElementById('increaseFontBtn').addEventListener('click', () => {
+            currentFontSize += 2;
+            editor.style.fontSize = `${currentFontSize}px`;
+            editor.focus();
+        });
+        document.getElementById('decreaseFontBtn').addEventListener('click', () => {
+            currentFontSize = Math.max(10, currentFontSize - 2);
+            editor.style.fontSize = `${currentFontSize}px`;
+            editor.focus();
+        });
+
+        
+        function esSeparador(char) {
+            for(let i = 0; i < SEPARADORES.length; i++) {
+                if(char === SEPARADORES[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        
+        function contarPalabras(texto) {
+            let contador = 0;
+            let esSeparadorAnterior = true; 
+            const n = texto.length;
+            
+            for (let i = 0; i < n; i++) {
+                const char = texto[i];
+                const esSeparadorActual = esSeparador(char);
+                
+                if (!esSeparadorActual) {
+                    if (esSeparadorAnterior) {
+                        contador++;
+                        esSeparadorAnterior = false; 
+                    }
+                } else {
+                    esSeparadorAnterior = true;
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarSignos(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                let char = texto[i];
+                for (let j = 0; j < SIGNOS.length; j++) {
+                    if (char === SIGNOS[j]) {
+                        contador++;
+                        break;
+                    }
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarVocales(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                let char = texto[i];
+                for (let j = 0; j < VOCALES.length; j++) {
+                    if (char === VOCALES[j]) {
+                        contador++;
+                        break;
+                    }
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarConsonantes(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                let char = texto[i];
+                for (let j = 0; j < CONSONANTES.length; j++) {
+                    if (char === CONSONANTES[j]) {
+                        contador++;
+                        break;
+                    }
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarDigitos(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                let char = texto[i];
+                if (char >= '0' && char <= '9') {
+                    contador++;
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarCapitalizacion(texto) {
+            let mayusculaInicial = 0;
+            let minusculaInicial = 0;
+            const n = texto.length;
+            let esSeparadorAnterior = true; 
+            
+            for (let i = 0; i < n; i++) {
+                const char = texto[i];
+                const esSeparadorActual = esSeparador(char);
+                
+                if (!esSeparadorActual && esSeparadorAnterior) {
+                    if (char >= 'A' && char <= 'Z') {
+                        mayusculaInicial++;
+                    } else if (char >= 'a' && char <= 'z') {
+                        minusculaInicial++;
+                    }
+                }
+                esSeparadorAnterior = esSeparadorActual;
+            }
+            return { mayusculaInicial, minusculaInicial };
+        }
+
+        
+        function contarParrafos(texto) {
+            const n = texto.length;
+            if (n === 0) return 0; 
+            
+            let contador = 0; 
+            let tieneContenido = false; 
+
+            for (let i = 0; i < n; i++) {
+                const char = texto[i];
+
+                if (char === '\n') {
+                    if (tieneContenido) {
+                        contador++;
+                        tieneContenido = false; 
+                    }
+                } else if (!esSeparador(char)) {
+                    tieneContenido = true;
+                }
+            }
+            
+            if (tieneContenido) {
+                contador++;
+            }
+            return contador;
+        }
+
+        
+        function invertirTexto(texto) {
+            let textoInvertido = "";
+            const n = texto.length;
+            for (let i = n - 1; i >= 0; i--) {
+                textoInvertido = textoInvertido + texto[i];
+            }
+            return textoInvertido;
+        }
+        
+        
+        function contarCaracteres(texto) {
+            return texto.length; 
+        }
+
+        
+        function buscarPalabraContador(texto, palabra) {
+            let count = 0;
+            const n = texto.length;
+            const m = palabra.length;
+            if (m === 0) return 0;
+            
+            let palabraLower = "";
+            for(let i = 0; i < m; i++) {
+                palabraLower += palabra[i];
+            }
+            
+            for (let i = 0; i <= n - m; i++) {
+                let charBefore = (i === 0) ? ' ' : texto[i-1];
+                let isLimiteAnterior = esSeparador(charBefore) || (i === 0);
+                for(let k = 0; k < SIGNOS.length; k++) {
+                     if (charBefore === SIGNOS[k]) { isLimiteAnterior = true; break; }
+                }
+
+                if (!isLimiteAnterior) {
+                    continue;
+                }
+
+                let match = true;
+                for (let j = 0; j < m; j++) {
+                    if (texto[i + j] !== palabraLower[j]) {
+                        match = false;
+                        break;
+                    }
+                }
+                
+                if (match) {
+                    let charAfter = (i + m === n) ? ' ' : texto[i + m];
+                    let isLimitePosterior = esSeparador(charAfter) || (i + m === n);
+                    for(let k = 0; k < SIGNOS.length; k++) {
+                         if (charAfter === SIGNOS[k]) { isLimitePosterior = true; break; }
+                    }
+                    
+                    if (isLimitePosterior) {
+                        count++;
+                        i += m - 1; 
+                    }
+                }
+            }
+            return count;
+        }
+
+        
+        function contarCaracterEspecifico(texto, caracter) {
+            let contador = 0;
+            if (caracter === null || caracter.length !== 1) return 0;
+
+            for (let i = 0; i < texto.length; i++) {
+                if (texto[i] === caracter) {
+                    contador++;
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarPosicionesPares(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                if (i % 2 === 0) {
+                    contador++;
+                }
+            }
+            return contador;
+        }
+
+        
+        function contarPosicionesImpares(texto) {
+            let contador = 0;
+            for (let i = 0; i < texto.length; i++) {
+                if (i % 2 !== 0) {
+                    contador++;
+                }
+            }
+            return contador;
+        }
+        
+        
+        function updateDOMStats() {
+            
+            const text = editor.textContent; 
+            const capitalizacion = contarCapitalizacion(text);
+            const invertido = invertirTexto(text);
+            
+            
+            document.getElementById('charCount').textContent = contarCaracteres(text);
+            document.getElementById('wordCount').textContent = contarPalabras(text);
+            document.getElementById('vowelCount').textContent = contarVocales(text);
+            document.getElementById('consonantCount').textContent = contarConsonantes(text);
+            document.getElementById('punctuationCount').textContent = contarSignos(text);
+            document.getElementById('digitCount').textContent = contarDigitos(text);
+            document.getElementById('upperStartCount').textContent = capitalizacion.mayusculaInicial;
+            document.getElementById('lowerStartCount').textContent = capitalizacion.minusculaInicial;
+            document.getElementById('paragraphCount').textContent = contarParrafos(text);
+            document.getElementById('evenPosCount').textContent = contarPosicionesPares(text);
+            document.getElementById('oddPosCount').textContent = contarPosicionesImpares(text);
+            
+            
+            document.getElementById('invertedTextResult').textContent = invertido.substring(0, 50) + (invertido.length > 50 ? '...' : '');
+
+            
+            const word = searchWordInput.value;
+            const rSearch = document.getElementById('r_search');
+
+            if (word.length > 0) {
+                const count = buscarPalabraContador(text, word);
+                rSearch.textContent = count > 0 
+                    ? `La palabra '${word}' SÍ se encuentra ${count} vez(ces).`
+                    : `La palabra '${word}' NO se encuentra.`;
+            } else {
+                rSearch.textContent = "Introduce una palabra para buscar.";
+            }
+        }
+
+        function executeInteractiveFunctions() {
+            const text = editor.textContent;
+
+            if (text.length === 0 || contarPalabras(text) === 0) {
+                alert("Por favor, escriba texto en el editor antes de ejecutar los ejercicios interactivos.");
+                return;
+            }
+
+            
+            alert(`Ejercicio 9 - Texto Invertido Completo:\n"${invertirTexto(text)}"`);
+            
+            
+            const caracterContar = prompt("Ejercicio 12: Ingrese un solo carácter para contar su aparición (Ej. a):");
+            if (caracterContar !== null && caracterContar.length === 1) {
+                const conteo = contarCaracterEspecifico(text, caracterContar);
+                alert(`RESULTADO CONTEO CARÁCTER:\nEl carácter '${caracterContar}' aparece ${conteo} veces.`);
+            }
+
+            
+            const fragmentoAnadir = prompt("Ejercicio 15: Ingrese el fragmento de texto a añadir:");
+            if (fragmentoAnadir !== null && fragmentoAnadir.length > 0) {
+                let inicio = "";
+                for (let i = 0; i < fragmentoAnadir.length; i++) {
+                    inicio += fragmentoAnadir[i];
+                }
+                inicio += " ";
+                for (let i = 0; i < text.length; i++) {
+                    inicio += text[i];
+                }
+                
+                let final = "";
+                for (let i = 0; i < text.length; i++) {
+                    final += text[i];
+                }
+                final += " ";
+                for (let i = 0; i < fragmentoAnadir.length; i++) {
+                    final += fragmentoAnadir[i];
+                }
+                
+                document.getElementById('texto15Inicio').textContent = inicio;
+                document.getElementById('texto15Final').textContent = final;
+                
+                editor.textContent = final;
+                updateDOMStats();
+            }
+        }
+
+        
+        editor.addEventListener('input', updateDOMStats);
+        searchWordInput.addEventListener('input', updateDOMStats);
+
+        
+        updateDOMStats();
+    </script>
+</body>
+</html>
